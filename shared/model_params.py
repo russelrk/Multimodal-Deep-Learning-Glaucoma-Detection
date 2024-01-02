@@ -16,11 +16,13 @@ class ModelParams:
         num_workers=16, 
         cross_val=0, 
         k_fold=10, 
+        inner_k_fold=10,
+        random_state=None,
         file_type="OR", 
         train=False, 
+        train_data=None,
         train_transforms=None, 
         eval_transforms=None, 
-        data_file=None
     ):
         """Initialize the model parameters with default values.
         Args:
@@ -61,8 +63,10 @@ class ModelParams:
         self.k_fold = k_fold
         self.file_type = file_type
         self.train = train
-        self.data_file = data_file
+        self.train_data = train_data
         self.weights = weights
+        self.random_state = random_state
+        
 
         # Define default training and evaluation transformations
         self._default_transforms(train_transforms, eval_transforms)
