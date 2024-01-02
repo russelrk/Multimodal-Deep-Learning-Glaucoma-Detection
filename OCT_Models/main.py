@@ -1,41 +1,28 @@
 import argparse
 import torch
 from torch.nn.modules.loss import BCEWithLogitsLoss
-from ..shared.data_preprocess import read_split_data, get_data_loader
-from ..shared.models import get_model
-from ..shared.model_params import ModelParams
-from ..shared.train_validate import train_model
 
-def main(args):
-    # Initialize model parameters using the provided arguments
-    modelParams = ModelParams(
-        args.model,
-        model_name=args.model_name,
-        weights=args.weights,
-        parent_dir=args.parent_dir,
-        batch_size=args.batch_size,
-        epochs=args.epochs,
-        learn_rate=args.learn_rate,
-        image_size=args.image_size,
-        num_workers=args.num_workers,
-        cross_val=args.cross_val,
-        k_fold=args.k_fold,
-        file_type=args.file_type,
-        train=args.train,
-        train_transforms=None,
-        eval_transforms=None,
-        data_file=None
-    )
+import sys
+sys.path.append('..')  # Add the parent directory to the sys.path
+
+from shared.data_preprocess import read_split_data, get_data_loader
+from shared.models import get_model
+from shared.model_params import ModelParams
+from shared.train_and_validate import train_model
+
+def main(modelParams):
 
     # Read and split the data for training and validation
     df_train, df_valid, df_test = read_split_data(
-        k_fold=args.k_fold,
-        cross_val=args.cross_val,
-        random_state=args.random_state,
-        inner_k_fold=args.inner_k_fold,
-        data_file=args.train_data
+        k_fold=modelParams.k_fold,
+        cross_val=modelParams.cross_val,
+        random_state=modelParams.random_state,
+        inner_k_fold=modelParams.k_fold,
+        data_file=modelParams.train_data
     )
 
+    print('data loaded', flush = True)
+    
     # Get data loaders for training, validation, and test datasets
     train_loader, trainSteps, class_weights = get_data_loader(
         df_train,
@@ -69,6 +56,7 @@ def main(args):
         num_classes=1,
     )
 
+    print('model loaded', flush = True)
     # Move the model to the specified device (e.g., GPU)
     model.to(args.device)
 
@@ -76,6 +64,7 @@ def main(args):
     loss_fn = BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=modelParams.LR)
 
+    print('Train Model', flush = True)
     # Train the model
     model = train_model(
         model,
@@ -85,7 +74,7 @@ def main(args):
         device=args.device,
         loss_fn=loss_fn,
         optimizer=optimizer,
-        model_params=modelParams
+        model_params=modelParams, 
     )
 
 if __name__ == "__main__":
@@ -96,19 +85,43 @@ if __name__ == "__main__":
     parser.add_argument("--weights", action='store_true', help="Use pretrained weights.")
     parser.add_argument("--parent_dir", default='', help="Parent directory of the file.")
     parser.add_argument("--batch_size", default=64, type=int, help="Defaults batch size.")
-    parser.add_argument("--epochs", default=10, type=int, help="Number of epochs to run.")
+    parser.add_argument("--epochs", default=2, type=int, help="Number of epochs to run.")
     parser.add_argument("--learn_rate", default=0.001, type=float, help="Learning rate for training the model.")
     parser.add_argument("--image_size", default=224, type=int, help="Size of the image for training.")
     parser.add_argument("--num_workers", default=4, type=int, help="Number of worker.")
     parser.add_argument("--cross_val", default=0, type=int, help="Cross_val to run.")
     parser.add_argument("--k_fold", default=10, type=int, help="Cross-validation fold number.")
+    parser.add_argument("--random_state", default=0, type=int, help="Random state.")
     parser.add_argument("--file_type", default='OR', help="File_type optional.")
     parser.add_argument("--train", action='store_true', help="To train or not.")
     parser.add_argument("--train_data", default="image_path_train.tsv", help="Path to train data.")
     parser.add_argument("--device", default="cuda", help="Device to use for training, e.g., cuda or cpu.")
 
+
     args = parser.parse_args()
-    main(args)
+    
+    # Initialize model parameters using the provided arguments
+    modelParams = ModelParams(
+        args.model,
+        model_name=args.model_name,
+        weights=args.weights,
+        parent_dir=args.parent_dir,
+        batch_size=args.batch_size,
+        epochs=args.epochs,
+        learn_rate=args.learn_rate,
+        image_size=args.image_size,
+        num_workers=args.num_workers,
+        cross_val=args.cross_val,
+        k_fold=args.k_fold,
+        file_type=args.file_type,
+        train=args.train,
+        train_data=args.train_data,
+        random_state=args.random_state,
+        train_transforms=None,
+        eval_transforms=None,
+    )
+    
+    main(modelParams)
 
 # Example usage:
-# python your_script_name.py --model resnet18 --weights --train_data /path/to/train_data.tsv
+# python your_script_name.py --model resnet18 --train_data /path/to/train_data.tsv
