@@ -12,6 +12,7 @@ from shared.train_and_validate import train_model
 
 def main(modelParams):
 
+    print('[INFO]: Load the data file', flush = True)
     # Read and split the data for training and validation
     df_train, df_valid, df_test = read_split_data(
         k_fold=modelParams.k_fold,
@@ -20,7 +21,9 @@ def main(modelParams):
         inner_k_fold=modelParams.k_fold,
         data_file=modelParams.train_data
     )
-    
+
+    print('[INFO]: File loaded', flush = True)
+
     # Get data loaders for training, validation, and test datasets
     train_loader, trainSteps, class_weights = get_data_loader(
         df_train,
@@ -45,6 +48,8 @@ def main(modelParams):
         data_type='oct',
         fid=False
     )
+
+    print('[INFO]: Get model {modelParams.model} for model training.', flush = True)
     
     # Get the model architecture
     model = get_model(
@@ -61,7 +66,7 @@ def main(modelParams):
     loss_fn = BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=modelParams.LR)
 
-    print('Train Model', flush = True)
+    print('[INFO]: Train the model.', flush = True)
     # Train the model
     model = train_model(
         model,
@@ -73,6 +78,8 @@ def main(modelParams):
         optimizer=optimizer,
         model_params=modelParams, 
     )
+
+    print('[INFO]: Train complete.', flush = True)
 
 if __name__ == "__main__":
     # Parse command-line arguments
