@@ -2,6 +2,8 @@ from typing import Tuple, List, Callable, Any
 import time
 import torch
 from sklearn.metrics import roc_auc_score
+import numpy as np
+import pandas as pd
 from .model_params import ModelParams
 
 def make_train_step(model: torch.nn.Module, 
