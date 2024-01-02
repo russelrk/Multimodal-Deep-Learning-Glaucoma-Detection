@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import logging
 
+from .model_params import ModelParams
+
 def read_split_data(
     k_fold: int = 5, 
     cross_val: int = 0, 
@@ -47,9 +49,6 @@ def read_split_data(
 
     try:
         df = pd.read_csv(data_file, sep='\t', low_memory=False)
-        for i in ["FID", "IID"]:
-            if i in df.columns:
-                df = df.rename(columns={i: "ID"})
     except Exception as e:
         logging.error(f"Error reading data file: {e}")
         raise
@@ -57,6 +56,7 @@ def read_split_data(
     if cross_val_inner is None:
         cross_val_inner = 0 if cross_val == k_fold - 1 else cross_val
 
+    print(df.columns)
     if k_fold is not None:
         df_pos = df.loc[df['label'] == 1]
         df_neg = df.loc[df['label'] == 0]
@@ -229,7 +229,6 @@ class OCT_Dataset(Dataset):
 
 
 from torch.utils.data import DataLoader
-# from .model_params import ModelParams
 
 
 def get_data_loader(
@@ -257,9 +256,11 @@ def get_data_loader(
     
     img_paths = df['img_path'].tolist()
     labels = df['label'].tolist()
-    fids = df['ID'].tolist()
+    
+    
     
     if data_type == 'oct':
+        fids = df['FID'].tolist()
         dataset = OCT_Dataset(
             img_paths, 
             labels, 
@@ -269,6 +270,7 @@ def get_data_loader(
             fid=fid
         )
     else:
+        fids = df['ID'].tolist()
         dataset = Fundus_Dataset(
             img_paths, 
             labels, 
