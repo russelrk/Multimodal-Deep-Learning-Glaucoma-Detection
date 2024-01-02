@@ -20,8 +20,6 @@ def main(modelParams):
         inner_k_fold=modelParams.k_fold,
         data_file=modelParams.train_data
     )
-
-    print('data loaded', flush = True)
     
     # Get data loaders for training, validation, and test datasets
     train_loader, trainSteps, class_weights = get_data_loader(
@@ -56,7 +54,6 @@ def main(modelParams):
         num_classes=1,
     )
 
-    print('model loaded', flush = True)
     # Move the model to the specified device (e.g., GPU)
     model.to(args.device)
 
@@ -82,7 +79,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Training a classification model.")
     parser.add_argument("--model", default="resnet18", help="Name of the model.")
     parser.add_argument("--model_name", default="model18", help="Name for the model.")
-    parser.add_argument("--weights", action='store_true', help="Use pretrained weights.")
+    parser.add_argument("--weights", action='store_true', default=False, help="Use pretrained weights.")
     parser.add_argument("--parent_dir", default='', help="Parent directory of the file.")
     parser.add_argument("--batch_size", default=64, type=int, help="Defaults batch size.")
     parser.add_argument("--epochs", default=2, type=int, help="Number of epochs to run.")
@@ -93,7 +90,7 @@ if __name__ == "__main__":
     parser.add_argument("--k_fold", default=10, type=int, help="Cross-validation fold number.")
     parser.add_argument("--random_state", default=0, type=int, help="Random state.")
     parser.add_argument("--file_type", default='OR', help="File_type optional.")
-    parser.add_argument("--train", action='store_true', help="To train or not.")
+    parser.add_argument("--train", action='store_true', default=False, help="To train or not.")
     parser.add_argument("--train_data", default="image_path_train.tsv", help="Path to train data.")
     parser.add_argument("--device", default="cuda", help="Device to use for training, e.g., cuda or cpu.")
 
